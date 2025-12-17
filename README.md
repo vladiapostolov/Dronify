@@ -29,7 +29,6 @@ WDM is a simplified, end-to-end prototype of a **drone-based warehouse inventory
 - [Roadmap (Phases & Milestones)](#roadmap-phases--milestones)
 - [Docs & Diagrams](#docs--diagrams)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
