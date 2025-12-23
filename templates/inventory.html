@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Inventory</h2>
+
+<p><a href="/scan">📷 Scan QR (PC camera)</a></p>
+
+<table border="1" cellpadding="6">
+  <tr>
+    <th>Name</th><th>Type</th><th>Qty</th><th>Min</th><th>Low?</th><th>QR</th><th>Last IN</th><th>Last OUT</th>
+  </tr>
+  {% for it in items %}
+  <tr>
+    <td>{{ it.name }}</td>
+    <td>{{ it.type }}</td>
+    <td>{{ it.quantity }}</td>
+    <td>{{ it.min_quantity }}</td>
+    <td>{% if it.is_low_stock %}⚠{% endif %}</td>
+    <td>{{ it.qr_code }}</td>
+    <td>{{ it.last_in_ts or "—" }}</td>
+    <td>{{ it.last_out_ts or "—" }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<hr>
+<h3>Add item (admin tool for v1)</h3>
+<form method="post" action="/inventory/add">
+  <input name="name" placeholder="Name" required><br><br>
+  <textarea name="description" placeholder="Description"></textarea><br><br>
+
+  <select name="type" required>
+    {% for t in allowed_types %}
+      <option value="{{t}}">{{t}}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <input name="quantity" type="number" value="0" min="0" required><br><br>
+  <input name="qr_code" placeholder="QR code content (unique)" required><br><br>
+  <button type="submit">Add</button>
+</form>
+
+{% endblock %}

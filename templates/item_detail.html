@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Scanned item</h2>
+
+<div class="card">
+  <p><b>Name:</b> {{ item.name }}</p>
+  <p><b>Type:</b> {{ item.type }}</p>
+  <p><b>Description:</b> {{ item.description or "—" }}</p>
+  <p><b>Current quantity:</b> {{ item.quantity }}</p>
+  <p><b>QR:</b> {{ item.qr_code }}</p>
+  <p><b>Last added (IN):</b> {{ item.last_in_ts or "Never" }}</p>
+  <p><b>Last removed (OUT):</b> {{ item.last_out_ts or "Never" }}</p>
+  <p><b>Last event:</b> {{ item.last_event_action or "—" }} ({{ item.last_event_qty or "" }}) by {{ item.last_event_by or "—" }} at {{ item.last_event_ts or "—" }}</p>
+</div>
+
+<hr>
+<h3>Stock actions</h3>
+
+<form method="post" action="/stock/ADD/{{ item.id }}">
+  <b>Add</b> qty:
+  <input name="quantity" type="number" min="1" value="1">
+  <input name="note" placeholder="note (optional)">
+  <button type="submit">Add</button>
+</form>
+
+<form method="post" action="/stock/REMOVE/{{ item.id }}">
+  <b>Remove</b> qty:
+  <input name="quantity" type="number" min="1" value="1">
+  <input name="note" placeholder="note (optional)">
+  <button type="submit">Remove</button>
+</form>
+
+<form method="post" action="/stock/RETURN/{{ item.id }}">
+  <b>Return</b> qty:
+  <input name="quantity" type="number" min="1" value="1">
+  <input name="note" placeholder="note (optional)">
+  <button type="submit">Return</button>
+</form>
+
+<hr>
+<h3>Recent history</h3>
+<table border="1" cellpadding="6">
+  <tr><th>Time</th><th>Action</th><th>Qty</th><th>User</th><th>Note</th></tr>
+  {% for e in events %}
+  <tr>
+    <td>{{ e.timestamp_created }}</td>
+    <td>{{ e.action }}</td>
+    <td>{{ e.quantity }}</td>
+    <td>{{ e.user_name }}</td>
+    <td>{{ e.note or "" }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
