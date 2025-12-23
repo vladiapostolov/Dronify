@@ -1,9 +1,5 @@
----FILEPATH warehouse_app/requirements.txt
----FIND
-```
-```
----REPLACE
-```
+flask
+flask-login
+werkzeug
+opencv-python
 mysql-connector-python
-```
----COMPLETEmysql-connector-python

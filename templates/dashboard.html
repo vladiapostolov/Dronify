@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+
+<p>Welcome, {{ user.full_name }} ({{ user.role }})</p>
+
+<div class="cards">
+  <div class="card">Total items: <b>{{ stats.total_items }}</b></div>
+  <div class="card">Total quantity: <b>{{ stats.total_quantity }}</b></div>
+  <div class="card">Low stock items: <b>{{ stats.low_stock_items }}</b></div>
+  <div class="card">Events today: <b>{{ stats.events_today }}</b></div>
+  <div class="card">Inbound qty today: <b>{{ stats.inbound_qty_today }}</b></div>
+  <div class="card">Outbound qty today: <b>{{ stats.outbound_qty_today }}</b></div>
+</div>
+{% endblock %}
