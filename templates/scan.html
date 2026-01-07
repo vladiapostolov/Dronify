@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% set title = "Scan QR Code" %}
+{% block content %}
+<div class="dashboard-header">
+    <h1>📷 QR Code Scanner</h1>
+    <p>Enter QR code or use camera to scan item codes</p>
+</div>
+
+<div class="card">
+    <h3>📝 Manual Entry (Recommended)</h3>
+    <form method="post" action="{{ url_for('scan.scan_manual') }}">
+        <div class="form-group">
+            <label for="qr_code">QR Code</label>
+            <input name="qr_code" id="qr_code" placeholder="Enter QR code (e.g., QR-BAT001)" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary">🔍 Lookup Item</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>📷 Camera Scanning (Advanced)</h3>
+    <p><strong>Note:</strong> This requires camera permissions to be granted to Terminal/Python.</p>
+    <p>To enable camera access on macOS:</p>
+    <ol>
+        <li>Open <strong>System Preferences → Security & Privacy → Camera</strong></li>
+        <li>Grant access to <strong>Terminal</strong> or <strong>Python</strong></li>
+        <li>Restart the server after granting permissions</li>
+    </ol>
+    <form method="post" action="{{ url_for('scan.scan_process') }}">
+        <button type="submit" class="btn btn-secondary">📷 Start Camera Scan</button>
+    </form>
+</div>
+
+<div class="card">
+    <a href="{{ url_for('inventory.inventory') }}" class="btn btn-secondary">← Back to Inventory</a>
+</div>
+{% endblock %}

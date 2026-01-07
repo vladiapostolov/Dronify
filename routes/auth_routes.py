@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required
+from werkzeug.security import check_password_hash
+from models.user import User
 from services.auth_service import authenticate, register_user, get_user_by_email
 
 auth_bp = Blueprint("auth", __name__)
@@ -13,11 +15,26 @@ def login():
     if request.method == "POST":
         email = request.form["email"].strip().lower()
         password = request.form["password"]
-        user = authenticate(email, password)
-        if user:
+        
+        row = get_user_by_email(email)
+        if not row:
+            flash("Invalid email or password", "danger")
+        elif not row.get("is_active", 1):
+            flash("Account is disabled. Contact administrator.", "warning")
+        elif not check_password_hash(row["password_hash"], password):
+            flash("Invalid email or password", "danger")
+        else:
+            user = User(
+                id=row["id"],
+                email=row["email"],
+                first_name=row["first_name"],
+                last_name=row["last_name"],
+                role=row["role"],
+                is_active=bool(row["is_active"])
+            )
             login_user(user)
             return redirect(url_for("dashboard.dashboard"))
-        flash("Invalid email or password", "danger")
+    
     return render_template("login.html")
 
 @auth_bp.route("/register", methods=["GET","POST"])

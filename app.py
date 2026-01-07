@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, logout_user
 from config import Config
 from services.auth_service import get_user_by_id
 
@@ -7,6 +7,7 @@ from routes.auth_routes import auth_bp
 from routes.dashboard_routes import dashboard_bp
 from routes.inventory_routes import inventory_bp
 from routes.scan_routes import scan_bp
+from routes.warehouse_routes import warehouse_bp
 
 def create_app():
     app = Flask(__name__)
@@ -20,10 +21,18 @@ def create_app():
     def load_user(user_id):
         return get_user_by_id(int(user_id))
 
+    @app.before_request
+    def check_user_active():
+        if current_user.is_authenticated and not current_user.is_active:
+            logout_user()
+            flash("Your account has been disabled.", "warning")
+            return redirect(url_for("auth.login"))
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(inventory_bp)
     app.register_blueprint(scan_bp)
+    app.register_blueprint(warehouse_bp)
 
     return app
 
