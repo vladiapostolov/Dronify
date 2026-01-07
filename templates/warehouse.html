@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% set title = "Warehouse Management" %}
+{% block content %}
+<div class="dashboard-header">
+    <h1>🏭 Warehouse Management: {{ warehouse.name }}</h1>
+    <p>Admin panel for managing warehouse inventory</p>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <h3>{{ stats.total_items }}</h3>
+        <p>📦 Total Items</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.total_quantity }}</h3>
+        <p>🔢 Total Quantity</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.low_stock_items }}</h3>
+        <p>⚠️ Low Stock Items</p>
+    </div>
+    <div class="stat-card">
+        <h3>{{ stats.events_today }}</h3>
+        <p>📈 Events Today</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>🔧 Warehouse Actions</h3>
+    <p><a href="{{ url_for('inventory.inventory') }}" class="btn btn-primary">➕ Add New Items</a></p>
+    <p><a href="{{ url_for('scan.scan') }}" class="btn btn-secondary">📱 Scan QR Codes</a></p>
+</div>
+
+<div class="inventory-table">
+    <h3>📦 Inventory List</h3>
+    <div class="sort-controls">
+        <form method="get" style="display: inline;">
+            <label>Sort by:</label>
+            <select name="sort" onchange="this.form.submit()">
+                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+                <option value="type" {% if sort_by == 'type' %}selected{% endif %}>Type</option>
+                <option value="quantity" {% if sort_by == 'quantity' %}selected{% endif %}>Quantity</option>
+            </select>
+            <select name="order" onchange="this.form.submit()">
+                <option value="asc" {% if request.args.get('order') == 'asc' %}selected{% endif %}>Ascending</option>
+                <option value="desc" {% if request.args.get('order') == 'desc' %}selected{% endif %}>Descending</option>
+            </select>
+        </form>
+    </div>
+    <table style="max-height: 400px; overflow-y: auto;">
+        <thead>
+            <tr>
+                <th>🏷️ SKU</th>
+                <th>📦 Name</th>
+                <th>🏷️ Type</th>
+                <th>🔢 Quantity</th>
+                <th>📉 Min Qty</th>
+                <th>⚠️ Status</th>
+                <th>📱 QR Code</th>
+                <th>🛠️ Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for it in items %}
+            <tr>
+                <td>{{ it.sku }}</td>
+                <td>{{ it.name }}</td>
+                <td>{{ it.type }}</td>
+                <td>{{ it.quantity }}</td>
+                <td>{{ it.min_quantity }}</td>
+                <td>{% if it.quantity < it.min_quantity %}⚠️ Low Stock{% else %}✅ OK{% endif %}</td>
+                <td>{{ it.qr_code or "—" }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('warehouse.remove_item', item_id=it.id) }}" style="display: inline;">
+                        <input name="quantity" type="number" min="1" max="{{ it.quantity }}" value="1" style="width: 60px;">
+                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

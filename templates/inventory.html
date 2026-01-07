@@ -10,7 +10,7 @@
     <p><a href="{{ url_for('scan.scan') }}" class="btn btn-primary">📷 Scan QR Code</a></p>
 </div>
 
-<div class="inventory-table">
+<div class="inventory-table" style="max-height: 400px; overflow-y: auto;">
     <table>
         <thead>
             <tr>
@@ -22,6 +22,7 @@
                 <th>📱 QR Code</th>
                 <th>📥 Last IN</th>
                 <th>📤 Last OUT</th>
+                {% if current_user.role == 'ADMIN' %}<th>🛠️ Actions</th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -35,12 +36,20 @@
                 <td>{{ it.qr_code or "—" }}</td>
                 <td>{{ it.last_in_ts or "—" }}</td>
                 <td>{{ it.last_out_ts or "—" }}</td>
+                {% if current_user.role == 'ADMIN' %}
+                <td>
+                    <form method="post" action="{{ url_for('inventory.delete_item', item_id=it.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?')">
+                        <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                    </form>
+                </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
+{% if current_user.role == 'ADMIN' %}
 <div class="add-item-form">
     <h3>➕ Add New Item</h3>
     <form method="post" action="{{ url_for('inventory.inventory_add') }}">
@@ -75,4 +84,5 @@
         <button type="submit" class="btn btn-primary">🚀 Add Item</button>
     </form>
 </div>
+{% endif %}
 {% endblock %}

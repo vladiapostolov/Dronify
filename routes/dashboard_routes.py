@@ -62,3 +62,68 @@ def add_user():
         flash(f"Error adding user: {str(e)}", "danger")
     
     return redirect(url_for('dashboard.manage_users'))
+
+@dashboard_bp.route("/users/toggle/<int:user_id>", methods=["POST"])
+@login_required
+def toggle_user_status(user_id):
+    if current_user.role != 'ADMIN':
+        flash("Access denied. Admin privileges required.", "danger")
+        return redirect(url_for('dashboard.dashboard'))
+    
+    if current_user.id == user_id:
+        flash("You cannot disable your own account.", "warning")
+        return redirect(url_for('dashboard.manage_users'))
+    
+    try:
+        with db_cursor() as (conn, cur):
+            cur.execute("SELECT is_active FROM users WHERE id=%s", (user_id,))
+            row = cur.fetchone()
+            if not row:
+                flash("User not found.", "danger")
+                return redirect(url_for('dashboard.manage_users'))
+            
+            new_status = 0 if row["is_active"] else 1
+            cur.execute("UPDATE users SET is_active=%s WHERE id=%s", (new_status, user_id))
+            conn.commit()
+        
+        status_text = "enabled" if new_status else "disabled"
+        flash(f"User account {status_text} successfully.", "success")
+    except Exception as e:
+        flash(f"Error updating user status: {e}", "danger")
+    
+    return redirect(url_for('dashboard.manage_users'))
+
+@dashboard_bp.route("/users/delete/<int:user_id>", methods=["POST"])
+@login_required
+def delete_user(user_id):
+    if current_user.role != 'ADMIN':
+        flash("Access denied. Admin privileges required.", "danger")
+        return redirect(url_for('dashboard.dashboard'))
+    
+    if current_user.id == user_id:
+        flash("You cannot delete your own account.", "warning")
+        return redirect(url_for('dashboard.manage_users'))
+    
+    try:
+        with db_cursor() as (conn, cur):
+            # Check if user exists
+            cur.execute("SELECT first_name, last_name FROM users WHERE id=%s", (user_id,))
+            user_row = cur.fetchone()
+            if not user_row:
+                flash("User not found.", "danger")
+                return redirect(url_for('dashboard.manage_users'))
+            
+            user_name = f"{user_row['first_name']} {user_row['last_name']}"
+            
+            # Delete warehouse_events first to avoid FK constraint
+            cur.execute("DELETE FROM warehouse_events WHERE user_id=%s", (user_id,))
+            
+            # Delete the user
+            cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
+            conn.commit()
+        
+        flash(f"User {user_name} deleted successfully.", "success")
+    except Exception as e:
+        flash(f"Error deleting user: {e}", "danger")
+    
+    return redirect(url_for('dashboard.manage_users'))

@@ -40,11 +40,17 @@ def add_item(name, description, type_, quantity, qr_code, warehouse_id=None):
     warehouse_id = warehouse_id or Config.DEFAULT_WAREHOUSE_ID
     if type_ not in ALLOWED_TYPES:
         raise ValueError("Invalid type")
-    with db_cursor() as (_, cur):
+    
+    # Generate unique SKU
+    import uuid
+    sku = f"ITEM{uuid.uuid4().hex[:8].upper()}"
+    
+    with db_cursor() as (conn, cur):
         cur.execute("""
-            INSERT INTO items (warehouse_id, name, description, type, quantity, qr_code)
-            VALUES (%s,%s,%s,%s,%s,%s)
-        """, (warehouse_id, name, description, type_, int(quantity), qr_code))
+            INSERT INTO items (sku, warehouse_id, name, description, type, quantity, qr_code)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
+        """, (sku, warehouse_id, name, description, type_, int(quantity), qr_code))
+        conn.commit()
 
 def apply_stock_action(item_id: int, user_id: int, action: str, qty: int, note: str = None):
     """

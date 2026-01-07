@@ -34,6 +34,7 @@
 <div class="card">
     <h3>⚡ Stock Actions</h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        {% if current_user.role == 'ADMIN' %}
         <form method="post" action="{{ url_for('scan.stock_action', action='ADD', item_id=item.id) }}">
             <h4>➕ Add Stock</h4>
             <div class="form-group">
@@ -46,20 +47,22 @@
             </div>
             <button type="submit" class="btn btn-primary">📥 Add Stock</button>
         </form>
+        {% endif %}
 
         <form method="post" action="{{ url_for('scan.stock_action', action='REMOVE', item_id=item.id) }}">
-            <h4>➖ Remove Stock</h4>
+            <h4>{% if current_user.role == 'ADMIN' %}➖ Remove Stock{% else %}🛒 Order Item{% endif %}</h4>
             <div class="form-group">
-                <label>Quantity to Remove</label>
+                <label>Quantity to {% if current_user.role == 'ADMIN' %}Remove{% else %}Order{% endif %}</label>
                 <input name="quantity" type="number" min="1" value="1" required>
             </div>
             <div class="form-group">
                 <label>Note (optional)</label>
                 <input name="note" placeholder="Add a note">
             </div>
-            <button type="submit" class="btn btn-secondary">📤 Remove Stock</button>
+            <button type="submit" class="btn {% if current_user.role == 'ADMIN' %}btn-secondary{% else %}btn-primary{% endif %}">{% if current_user.role == 'ADMIN' %}📤 Remove Stock{% else %}🛒 Order Item{% endif %}</button>
         </form>
 
+        {% if current_user.role == 'ADMIN' %}
         <form method="post" action="{{ url_for('scan.stock_action', action='RETURN', item_id=item.id) }}">
             <h4>↩️ Return Stock</h4>
             <div class="form-group">
@@ -72,6 +75,7 @@
             </div>
             <button type="submit" class="btn btn-secondary">🔄 Return Stock</button>
         </form>
+        {% endif %}
     </div>
 </div>
 
