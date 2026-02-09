@@ -46,7 +46,8 @@ Manual cycle-counting and inventory audits are time-consuming and error-prone. W
 - 📷 **QR/barcode scanning** (from images or generated codes)
 - 🔌 **REST API ingestion** of scan events (`POST /scan-item`)
 - 🗄️ **Inventory database** (SQLite for dev, Postgres optional)
-- 📊 **Dashboard** showing:
+- � **Gmail Email Notifications** for admin and staff request updates
+- �📊 **Dashboard** showing:
   - scanned items feed
   - inventory list
   - basic warehouse map/grid

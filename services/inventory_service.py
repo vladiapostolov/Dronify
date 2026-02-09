@@ -1,5 +1,9 @@
+import logging
 from db.connection import db_cursor
 from config import Config
+
+logger = logging.getLogger("dronify.app")
+trace_logger = logging.getLogger("dronify.trace")
 
 ALLOWED_TYPES = {
     "BATTERY","FIN","CONTROLLER","MOTOR","ESC","FRAME","PROPELLER","CAMERA","DRONE","OTHER"
@@ -40,6 +44,17 @@ def add_item(name, description, type_, quantity, qr_code, warehouse_id=None):
     warehouse_id = warehouse_id or Config.DEFAULT_WAREHOUSE_ID
     if type_ not in ALLOWED_TYPES:
         raise ValueError("Invalid type")
+
+    if quantity is None:
+        raise ValueError("Quantity is required")
+    quantity = int(quantity)
+    if quantity < 0:
+        raise ValueError("Quantity cannot be negative")
+
+    if not qr_code:
+        raise ValueError("QR code is required")
+    if qr_code_exists(qr_code):
+        raise ValueError("QR code already exists")
     
     # Generate unique SKU
     import uuid
@@ -51,6 +66,13 @@ def add_item(name, description, type_, quantity, qr_code, warehouse_id=None):
             VALUES (%s,%s,%s,%s,%s,%s,%s)
         """, (sku, warehouse_id, name, description, type_, int(quantity), qr_code))
         conn.commit()
+        logger.info("Inventory item created", extra={"sku": sku, "name": name, "qr_code": qr_code})
+
+
+def qr_code_exists(qr_code: str) -> bool:
+    with db_cursor() as (_, cur):
+        cur.execute("SELECT 1 FROM items WHERE qr_code=%s", (qr_code,))
+        return cur.fetchone() is not None
 
 def apply_stock_action(item_id: int, user_id: int, action: str, qty: int, note: str = None):
     """
