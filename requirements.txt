@@ -1,5 +1,8 @@
 flask
 flask-login
+flask-mail
 werkzeug
 opencv-python
 mysql-connector-python
+python-dotenv
+dnspython

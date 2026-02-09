@@ -19,13 +19,13 @@ def get_user_by_email(email: str):
         """, (email,))
         return cur.fetchone()
 
-def register_user(first_name, last_name, email, password, role="BASIC_USER"):
+def register_user(first_name, last_name, email, password, role="STAFF", is_active=False):
     pwd = generate_password_hash(password)
     with db_cursor() as (conn, cur):
         cur.execute("""
-            INSERT INTO users (first_name, last_name, email, password_hash, role)
-            VALUES (%s,%s,%s,%s,%s)
-        """, (first_name, last_name, email, pwd, role))
+            INSERT INTO users (first_name, last_name, email, password_hash, role, is_active)
+            VALUES (%s,%s,%s,%s,%s,%s)
+        """, (first_name, last_name, email, pwd, role, is_active))
         conn.commit()
         return cur.lastrowid
 
@@ -45,3 +45,16 @@ def authenticate(email: str, password: str):
         role=row["role"],
         is_active=bool(row["is_active"])
     )
+
+
+def activate_user(user_id: int):
+    with db_cursor() as (conn, cur):
+        cur.execute("UPDATE users SET is_active=1 WHERE id=%s", (user_id,))
+        conn.commit()
+
+
+def is_user_active(user_id: int):
+    with db_cursor() as (_, cur):
+        cur.execute("SELECT is_active FROM users WHERE id=%s", (user_id,))
+        row = cur.fetchone()
+        return bool(row["is_active"]) if row else False

@@ -1,9 +1,12 @@
+import logging
 from flask import Blueprint, render_template, redirect, url_for, flash, request, Response, jsonify, session
 from flask_login import login_required, current_user
 from qr.qr_scanner import VideoCamera, generate_frames
 from services.inventory_service import get_item_details_by_qr, get_item_events, apply_stock_action
 
 scan_bp = Blueprint("scan", __name__)
+logger = logging.getLogger("dronify.app")
+trace_logger = logging.getLogger("dronify.trace")
 
 # Global camera instance
 camera = None
@@ -24,14 +27,25 @@ def scan_manual():
     
     if not qr_code:
         flash("Please enter a QR code", "warning")
+        trace_logger.info("QR lookup failed: empty input")
+        return redirect(url_for("scan.scan"))
+    if len(qr_code) < 3:
+        flash("QR code must be at least 3 characters.", "warning")
+        trace_logger.info("QR lookup failed: too short", extra={"qr_code": qr_code})
+        return redirect(url_for("scan.scan"))
+    if len(qr_code) > 100:
+        flash("QR code is too long.", "warning")
+        trace_logger.info("QR lookup failed: too long", extra={"qr_code_len": len(qr_code)})
         return redirect(url_for("scan.scan"))
 
     item = get_item_details_by_qr(qr_code)
     if not item:
         flash(f"No item found for QR: {qr_code}", "danger")
+        logger.warning("QR lookup not found", extra={"qr_code": qr_code})
         return redirect(url_for("scan.scan"))
 
     events = get_item_events(item["id"], limit=15)
+    logger.info("QR lookup success", extra={"qr_code": qr_code, "item_id": item['id']})
     return render_template("item_detail.html", item=item, events=events)
 
 @scan_bp.route("/scan/camera")
